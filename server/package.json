@@ -1,0 +1,29 @@
+{
+  "name": "in-class-project",
+  "version": "1.0.0",
+  "description": "To demonstrate application development using a multi-tiered architecture",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "jest",
+    "dev": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gcsmckinnon/COMP-2068-W23.git"
+  },
+  "author": "W23 Semester Class",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gcsmckinnon/COMP-2068-W23/issues"
+  },
+  "homepage": "https://github.com/gcsmckinnon/COMP-2068-W23#readme",
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "jest": "^29.7.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
