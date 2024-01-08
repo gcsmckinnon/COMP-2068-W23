@@ -91,7 +91,7 @@ app.use(express.urlencoded({ extended: true }));
  */
 app.get("/", (req, res) => {
     // Below will stringify the request object and send it back to the user as a response
-    res.json(req);
+    res.send("Boorakacha");
 });
 
 /**
