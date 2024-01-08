@@ -1,0 +1,21 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+.insult-container {
+    padding: 20px;
+    background-color: #ffdddd;
+    border: 1px solid #ffaaaa;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+.insult-text {
+    color: #555;
+    font-size: 1.2em;
+    text-align: center;
+}

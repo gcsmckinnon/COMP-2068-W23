@@ -36,6 +36,22 @@ dotenv.config();
 const app = express();
 
 /**
+ * View engines are essential if you want to deliver an HTML experience to your
+ * end user. EJS is a type of view engine that allows you to mix JavaScript and HTML
+ * together, similar to Razor pages in ASP.NET.
+ * 
+ * All views need to go into a "views" folder at the root of your application. The EJS
+ * engine will look for the views by default in that folder.
+ */
+app.set("view engine", "ejs");
+
+/**
+ * Static files are delivered by first registering their location with our application,
+ * then ensuring we populate the file in the correct location within our app.
+ */
+app.use(express.static("public"));
+
+/**
  * Middleware is a way to inject features into your application. Below
  * we're registering two express middlewares to support handling query
  * strings and body parameters passed to us from our application
@@ -76,6 +92,30 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/", (req, res) => {
     // Below will stringify the request object and send it back to the user as a response
     res.json(req);
+});
+
+/**
+ * Below is a fun route that will auto-generate an insult and return it.
+ * 
+ * Any middleware that uses an async callback will need the logic wrapped in a try/catch
+ * to ensure that an error doesn't cause the application to die.
+ */
+app.get("/insult", async (req, res) => {
+    try {
+        const insultURL = "https://insult.mattbas.org/api/insult";
+        const response = await fetch(insultURL);
+        const insult = await response.text();
+
+        /**
+         * Below we're using the EJS engine to render the insult.ejs file, and we are
+         * also passing it a localized value under the variable name "insult". Within the EJS
+         * file, we can access this value by simply referencing the key name ("insult") as a
+         * variable.
+         */
+        res.render("insult", { insult: insult });
+    } catch (error) {
+        next(error);
+    }
 });
 
 /**
