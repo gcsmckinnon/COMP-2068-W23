@@ -1,9 +1,18 @@
 import express from "express";
 import dotenv from "dotenv";
 import PageRoutes from "./routes/PageRoutes.js";
+import CardRoutes from "./routes/CardRoutes.js";
+import mongoose from "mongoose";
 
 // This loads our .env and adds the variables to the environment
 dotenv.config();
+
+/**
+ * Setting up Mongoose
+ */
+mongoose.connect(`mongodb+srv://${process.env.MONGO_USERNAME}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_DATABASE}.l6f1eyq.mongodb.net/?retryWrites=true&w=majority`)
+    .then(() => console.info("MongoDB Connected"))
+    .catch(error => console.error(error));
 
 // This creates our application
 const app = express();
@@ -20,8 +29,25 @@ app.use(express.json());
 // Middleware for parsing url-encoded requests
 app.use(express.urlencoded({ extended: true }));
 
+// Method overriding to deal with unsupported HTTP methods in certain platforms
+app.use((req, _, next) => {
+    if (req.body && typeof req.body === 'object' && '_method' in req.body) {        
+        const method = req.body._method;
+
+        delete req.body._method;
+
+        req.method = method;
+    }
+
+    next();
+});
+
+
 // Registering our PageRoutes as middleware
 app.use("/", PageRoutes);
+
+// Our Card routes
+app.use("/cards", CardRoutes);
 
 // Our error handler
 app.use((error, _, res, __) => {

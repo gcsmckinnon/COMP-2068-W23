@@ -1,12 +1,11 @@
-body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f4f4f4;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
+.standard-link {
+    border: none;
+    background-color: transparent;
+    color: rgba(var(--bs-link-color-rgb), var(--bs-link-opacity,1));
+    text-decoration: underline;
+    display: inline;
 }
+
 .insult-container {
     padding: 20px;
     background-color: #ffdddd;
@@ -14,8 +13,25 @@ body {
     border-radius: 10px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
+
 .insult-text {
     color: #555;
     font-size: 1.2em;
     text-align: center;
+}
+
+.ca-card {
+    width: 200px; /* Adjust width as needed */
+    height: 250px; /* Adjust height as needed */
+    margin: 10px;
+    font-size: 14px; /* Adjust font size as needed */
+    font-family: Arial, sans-serif; /* Cards Against Humanity uses Helvetica Neue, but Arial is a close alternative */
+}
+
+.ca-card .card-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.4em;
+    font-weight: bold;
 }

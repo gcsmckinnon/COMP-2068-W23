@@ -1,0 +1,21 @@
+<%- include("../shared/_header") %>
+
+<div class="container mt-5">
+    <h1>Cards List</h1>
+
+    <hr class="my-5">
+
+    <a href="/cards/<%= card.id %>/edit">Edit card</a>
+
+    <div class="card ca-card <%= card.type === 'QUESTION' ? 'bg-dark text-white' : 'bg-white text-dark' %>">
+        <div class="card-body">
+            <p class="card-text">
+                <%= card.content.replace(/\[blank\d+\]/g, "______") %>
+            </p>
+        </div>
+    </div>
+
+    <a href="/cards">Back to cards</a>
+</div>
+
+<%- include("../shared/_footer") %>

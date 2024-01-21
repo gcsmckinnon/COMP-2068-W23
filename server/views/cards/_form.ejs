@@ -1,0 +1,37 @@
+<%
+    let action = "";
+    let content = "";
+    let cardType = "";
+    let method = "post";
+
+    if (typeof card !== "undefined") {
+        action = `/${card.id}`;
+        content = card.content;
+        cardType = card.type;
+        method = "put";
+    }
+%>
+
+<form action="/cards<%= action %>" method="post" class="mt-3">
+    <input type="hidden" name="_method" value="<%= method %>">
+
+    <div class="mb-3">
+        <label for="content" class="form-label">Content:</label>
+        <input type="text" class="form-control" id="content" name="content" required value="<%= content %>">
+    </div>
+
+    <div class="mb-3">
+        <label for="type" class="form-label">Type:</label>
+        <select id="type" name="type" class="form-select" required>
+            <% cardTypes.forEach(function(type) { %>
+                <option value="<%= type %>" <%= type === cardType ? "selected" : "" %>>
+                    <%= type %>
+                </option>
+            <% }); %>
+        </select>
+    </div>
+
+    <!-- Include other fields as necessary -->
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
