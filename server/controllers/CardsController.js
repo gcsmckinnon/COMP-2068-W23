@@ -73,6 +73,7 @@ export const update = async (req, res, next) => {
         const { content, type } = req.body;
 
         const card = await Card.findById(req.params.id);
+        console.log(card);
 
         if (!card) {
             req.status = 404;
