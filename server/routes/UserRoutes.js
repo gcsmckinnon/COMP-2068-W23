@@ -2,7 +2,7 @@ import multer from "multer";
 import crypto from "crypto";
 import { Router } from "express";
 import { index, show, add, edit, create, update, remove } from "../controllers/UsersController.js";
-import { isAuthenticated } from "../controllers/AuthenticationController.js";
+import { isAuthenticated, isRole } from "../controllers/AuthenticationController.js";
 
 // Creates a router
 const router = Router();
@@ -32,7 +32,7 @@ const requestCheck = (req, _, next) => {
 };
 
 // Defines routes and associates them with controller actions
-router.get("/", isAuthenticated, index);
+router.get("/", isAuthenticated, isRole("ADMIN"), index);
 router.get("/new", add);
 router.get("/:id", isAuthenticated, show);
 router.get("/:id/edit", isAuthenticated, edit);
@@ -46,7 +46,7 @@ router.post("/:id", (req, res, next) => {
 
 router.put("/:id", isAuthenticated, upload.single("avatar"), update);
 
-router.delete("/:id", isAuthenticated, remove);
+router.delete("/:id", isAuthenticated, isRole("ADMIN"), remove);
 
 export default router;
 

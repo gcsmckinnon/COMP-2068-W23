@@ -12,6 +12,8 @@ export default (app) => {
     
     app.use((req, res, next) => {
         res.locals.isAuthenticated = req.isAuthenticated();
+        res.locals.isAdmin = req.user?.role === "ADMIN";
+        res.locals.isUser = req.user?.role === "USER";
         next();
     });
 };

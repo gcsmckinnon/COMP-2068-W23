@@ -30,6 +30,11 @@ const UserSchema = new mongoose.Schema(
             type: String,
             required: false,
             maxlength: [50, "Filename cannot exceed 50 characters"]
+        },
+        role: {
+            type: String,
+            enum: ["USER", "ADMIN"],
+            default: "USER"
         }
     },
     {

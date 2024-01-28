@@ -29,3 +29,21 @@ export const isAuthenticated = (req, res, next) => {
 
     res.redirect("/login");
 };
+
+export const isRole = (role) => {
+    return (req, res, next) => {
+        if (!req.isAuthenticated) {
+            req.status = 401;
+
+            return next(new Error("NOT AUTHORIZED"));
+        }
+
+        if (!role !== req.user.role) {
+            req.status = 403;
+
+            return next(new Error("FORBIDDEN"));
+        }
+        
+        next();
+    }
+}
