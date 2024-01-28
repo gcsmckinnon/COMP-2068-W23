@@ -4,7 +4,7 @@ const cardTypes = Card.schema.path("type").enumValues;
 
 export const index = async (req, res, next) => {
     try {
-        const cards = await Card.find();
+        const cards = await Card.find().populate("author");
 
         res.render("cards/index", { cards, title: "Cards List" });
     } catch(error) {
@@ -14,7 +14,7 @@ export const index = async (req, res, next) => {
 
 export const show = async (req, res, next) => {
     try {
-        const card = await Card.findById(req.params.id);
+        const card = await Card.findById(req.params.id).populate("author");
 
         if (!card) {
             req.status = 404;
@@ -58,7 +58,7 @@ export const create = async (req, res, next) => {
     try {
         const { content, type } = req.body;
 
-        const newCard = new Card({ content, type});
+        const newCard = new Card({ content, type, author: req?.user?.id});
 
         await newCard.save();
 
@@ -73,7 +73,6 @@ export const update = async (req, res, next) => {
         const { content, type } = req.body;
 
         const card = await Card.findById(req.params.id);
-        console.log(card);
 
         if (!card) {
             req.status = 404;
@@ -82,6 +81,7 @@ export const update = async (req, res, next) => {
 
         card.content = content;
         card.type = type;
+        card.author = req?.user?.id;
 
         await card.save();
 

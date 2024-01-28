@@ -1,27 +1,40 @@
 import express from "express";
 import dotenv from "dotenv";
-import PageRoutes from "./routes/PageRoutes.js";
-import CardRoutes from "./routes/CardRoutes.js";
-import mongoose from "mongoose";
+import RoutesSetup from "./lib/RoutesSetup.js";
+import MongooseSetup from "./lib/MongooseSetup.js";
+import PassportSetup from "./lib/PassportSetup.js";
+import session from "express-session";
 
 // This loads our .env and adds the variables to the environment
 dotenv.config();
 
-/**
- * Setting up Mongoose
- */
-mongoose.connect(`mongodb+srv://${process.env.MONGO_USERNAME}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_DATABASE}.l6f1eyq.mongodb.net/?retryWrites=true&w=majority`)
-    .then(() => console.info("MongoDB Connected"))
-    .catch(error => console.error(error));
-
 // This creates our application
 const app = express();
+
+// Setup sessions
+app.use(session({
+    secret: process.env.SECRET_KEY,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        httpOnly: true,
+        secure: (process.env.NODE_ENV === "production"),
+        sameSite: (process.env.NODE_ENV === "production" ? "strict" : "lax")
+    }
+}));
+
+// Setup Mongoose
+MongooseSetup();
+
+// Setup Passport
+PassportSetup(app);
 
 // This sets our view engine (HTML renderer)
 app.set("view engine", "ejs");
 
 // This sets the public assets folder
 app.use(express.static("public"));
+app.use(express.static("avatars"));
 
 // Middleware to handle JSON
 app.use(express.json());
@@ -31,7 +44,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Method overriding to deal with unsupported HTTP methods in certain platforms
 app.use((req, _, next) => {
-    if (req.body && typeof req.body === 'object' && '_method' in req.body) {        
+    if (req.body && typeof req.body === "object" && "_method" in req.body) {
         const method = req.body._method;
 
         delete req.body._method;
@@ -42,12 +55,7 @@ app.use((req, _, next) => {
     next();
 });
 
-
-// Registering our PageRoutes as middleware
-app.use("/", PageRoutes);
-
-// Our Card routes
-app.use("/cards", CardRoutes);
+RoutesSetup(app);
 
 // Our error handler
 app.use((error, _, res, __) => {

@@ -1,6 +1,6 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
-const CardSchema = new mongoose.Schema({
+const CardSchema = new Schema({
     content: {
         type: String,
         required: [true, "You must provide content for the card"],
@@ -11,6 +11,11 @@ const CardSchema = new mongoose.Schema({
         type: String,
         enum: ["QUESTION", "ANSWER"],
         required: [true, "You must choose a card type"],
+    },
+    author: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: [true, "Card must have an author"]
     }
 }, { timestamps: true });
 

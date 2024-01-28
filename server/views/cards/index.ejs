@@ -11,6 +11,7 @@
         <thead>
             <tr>
                 <th>Content</th>
+                <th>Author</th>
                 <th>Type</th>
                 <th>Last Updated</th>
                 <th>Actions</th>
@@ -19,9 +20,12 @@
 
         <tbody>
             <% if (cards && cards.length > 0) { %>
-                <% cards.forEach(({ id, content, type, updatedAt }) => { %>
+                <% cards.forEach(({ id, author, content, type, updatedAt }) => { %>
                     <tr>
                         <td><%= content %></td>
+                        <td>
+                            <%= author?.nickname %>
+                        </td>
                         <td><%= type %></td>
                         <td><%= updatedAt %></td>
                         <td>

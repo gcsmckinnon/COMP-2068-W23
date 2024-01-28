@@ -1,0 +1,50 @@
+<%- include("../shared/_header") %>
+
+<div class="container mt-5">
+    <h1>User List</h1>
+
+    <hr class="my-5">
+
+    <a href="/users/new">Create a new user</a>
+
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Email</th>
+                <th>Nickname</th>
+                <th>Avatar</th>
+                <th>Last Updated</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <% if (users && users.length > 0) { %>
+                <% users.forEach(({ id, firstName, lastName, email, nickname, avatar, updatedAt }) => { %>
+                    <tr>
+                        <td><%= firstName %></td>
+                        <td><%= lastName %></td>
+                        <td><%= email %></td>
+                        <td><%= nickname %></td>
+                        <td>
+                            <img class="img-thumbnail" style="max-width: 100px; max-height: 100px;" src="<%= avatar %>">
+                        </td>
+                        <td><%= updatedAt %></td>
+                        <td>
+                            <a href="/users/<%= id %>">view</a> | 
+                            <a href="/users/<%= id %>/edit">edit</a> | 
+                            <form action="/users/<%= id %>" method="post" onsubmit="return confirm('Are you sure you want to delete this card?')">
+                                <input type="hidden" name="_method" value="delete">
+                                <button class="standard-link" type="submit">delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                <% }) %>
+            <% } %>
+        </tbody>
+    </table>
+</div>
+
+<%- include("../shared/_footer") %>
