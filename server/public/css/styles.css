@@ -6,20 +6,6 @@
     display: inline;
 }
 
-.insult-container {
-    padding: 20px;
-    background-color: #ffdddd;
-    border: 1px solid #ffaaaa;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.insult-text {
-    color: #555;
-    font-size: 1.2em;
-    text-align: center;
-}
-
 .ca-card {
     width: 200px; /* Adjust width as needed */
     height: 250px; /* Adjust height as needed */
