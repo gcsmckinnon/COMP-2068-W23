@@ -1,6 +1,6 @@
 // Import the necessary modules and dependencies (not shown in the provided code)
-import passport from 'passport';
-import User from './user'; // Assuming you import the User model from a separate file
+import passport from "passport";
+import User from "../models/User.js"; // Assuming you import the User model from a separate file
 
 // Middleware function to set up Passport for authentication
 export default (app) => {
