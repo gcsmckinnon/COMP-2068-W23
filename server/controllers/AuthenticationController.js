@@ -38,7 +38,7 @@ export const isRole = (role) => {
             return next(new Error("NOT AUTHORIZED"));
         }
 
-        if (!role !== req.user.role) {
+        if (role !== req.user.role) {
             req.status = 403;
 
             return next(new Error("FORBIDDEN"));
