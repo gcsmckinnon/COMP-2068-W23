@@ -137,15 +137,11 @@ export const update = async (req, res, next) => {
             throw new Error(message.join("\n"));
         }
 
-        // Update user password (if provided)
-        if (password) {
-            await user.setPassword(password);
-        }
-
         // Handle user avatar (if provided)
         if (avatar && fs.existsSync(avatar.path)) {
             fs.copyFileSync(avatar.path, `avatars/${avatar.filename}`);
             fs.unlinkSync(avatar.path);
+            fs.unlinkSync( `avatars/${user.avatar}`);
             user.avatar = avatar.filename;
         }
 
