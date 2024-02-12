@@ -11,6 +11,24 @@ export const authenticate = async (req, res, next) => {
     passport.authenticate("local", {
         successRedirect: "/", // Redirect on successful authentication
         failureRedirect: "/login", // Redirect on failed authentication
+    }, (error, user) => {
+        if (error) {
+            req.session.notifications = [{ alertType: "alert-danger", message: "Issue with logging in" }];
+            return next(error);
+        }
+
+        if (!user) {
+            req.session.notifications = [{ alertType: "alert-danger", message: "Issue with logging in" }];
+            return res.redirect("/login");
+        }
+
+        req.logIn(user, (err) => {
+            if (err) return next(err);
+            
+            req.session.notifications = [{ alertType: "alert-success", message: "Successfully logged in" }];
+
+            return res.redirect("/");
+        });
     })(req, res, next); // Invoke Passport middleware with request, response, and next middleware function
 };
 

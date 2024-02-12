@@ -1,0 +1,9 @@
+<% if (typeof notifications !== "undefined") { %>
+    <div>
+        <% for (const { alertType, message } of notifications) { %>
+            <div class="alert <%= alertType %>">
+                <%= message %>
+            </div>
+        <% } %>
+    </div>
+<% } %>

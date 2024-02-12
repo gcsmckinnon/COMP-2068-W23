@@ -1,6 +1,9 @@
 import User from "../models/User.js";
 import fs from "fs";
 
+const temporaryStorage = process.env.TEMP_FILE_STORAGE || "temp";
+const permanentStorage = "avatars";
+
 // Function to display a list of Users (admin access only)
 export const index = async (_, res, next) => {
     try {
@@ -34,7 +37,7 @@ export const show = async (req, res, next) => {
 };
 
 // Function to display a CMS interface for adding a new User
-export const add = async (req, res, next) => {
+export const add = async (_, res, next) => {
     try {
         // Render the user addition form page
         res.render("users/add", {
@@ -90,7 +93,8 @@ export const create = async (req, res, next) => {
 
         // Handle user avatar (if provided)
         if (avatar && fs.existsSync(avatar.path)) {
-            fs.copyFileSync(avatar.path, `avatars/${avatar.filename}`);
+            fs.copyFileSync(avatar.path, `${permanentStorage}/${avatar.filename}`);
+            await new Promise(resolve => setTimeout(resolve, 100));
             fs.unlinkSync(avatar.path);
             user.avatar = avatar.filename;
         }
@@ -99,9 +103,20 @@ export const create = async (req, res, next) => {
         await User.register(user, password);
 
         // Redirect to the user list page after successful user creation
-        res.redirect("/users");
+        res.format({
+            "text/html": () => {
+                req.session.notifications = [{ alertType: "alert-success", message: "User was created successfully" }];
+                res.redirect("/users");
+            },
+            "application/json": () => {
+                res.status(201).json({ status: 201, message: "SUCCESS" });
+            },
+            default: () => {
+                res.status(406).send("NOT ACCEPTABLE");
+            }
+        });
     } catch (error) {
-        console.error(error);
+        req.session.notifications = [{ alertType: "alert-danger", message: "User failed to create" }];
         next(error);
     }
 };
@@ -110,7 +125,7 @@ export const create = async (req, res, next) => {
 export const update = async (req, res, next) => {
     try {
         // Extract and validate user input from the request
-        const { id, firstName, lastName, nickname, email, password, avatar } = getStrongParams(req);
+        const { firstName, lastName, nickname, email, password, avatar } = getStrongParams(req);
 
         // Find and verify a user based on the provided request parameters
         let user = await findAndVerifyUser(req);
@@ -139,9 +154,11 @@ export const update = async (req, res, next) => {
 
         // Handle user avatar (if provided)
         if (avatar && fs.existsSync(avatar.path)) {
-            fs.copyFileSync(avatar.path, `avatars/${avatar.filename}`);
+            fs.copyFileSync(avatar.path, `${permanentStorage}/${avatar.filename}`);
+            await new Promise(resolve => setTimeout(resolve, 100));
             fs.unlinkSync(avatar.path);
-            fs.unlinkSync( `avatars/${user.avatar}`);
+            await new Promise(resolve => setTimeout(resolve, 100));
+            if (fs.existsSync(`${permanentStorage}/${user.avatar}`)) fs.unlinkSync(`${permanentStorage}/${user.avatar}`);
             user.avatar = avatar.filename;
         }
 
@@ -149,8 +166,20 @@ export const update = async (req, res, next) => {
         user.save();
 
         // Redirect to the user list page after successful user update
-        res.redirect("/users");
+        res.format({
+            "text/html": () => {
+                req.session.notifications = [{ alertType: "alert-success", message: "User was updated successfully" }];
+                res.redirect("/users");
+            },
+            "application/json": () => {
+                res.status(201).json({ status: 201, message: "SUCCESS" });
+            },
+            default: () => {
+                res.status(406).send("NOT ACCEPTABLE");
+            }
+        });
     } catch (error) {
+        req.session.notifications = [{ alertType: "alert-danger", message: "User failed to update" }];
         next(error);
     }
 };
@@ -162,7 +191,7 @@ export const remove = async (req, res, next) => {
         const user = await findAndVerifyUser(req);
 
         // Delete the user's avatar file (if it exists)
-        const filepath = `avatars/${user.avatar}`;
+        const filepath = `${permanentStorage}/${user.avatar}`;
         
         if (fs.existsSync(filepath)) {
             fs.unlinkSync(filepath);
@@ -172,8 +201,20 @@ export const remove = async (req, res, next) => {
         await User.findByIdAndDelete(req.params.id);
 
         // Redirect to the user list page after successful user removal
-        res.redirect("/users");
+        res.format({
+            "text/html": () => {
+                req.session.notifications = [{ alertType: "alert-success", message: "User was deleted successfully" }];
+                res.redirect("/users");
+            },
+            "application/json": () => {
+                res.status(201).json({ status: 201, message: "SUCCESS" });
+            },
+            default: () => {
+                res.status(406).send("NOT ACCEPTABLE");
+            }
+        });
     } catch (error) {
+        req.session.notifications = [{ alertType: "alert-danger", message: "User failed to delete" }];
         next(error);
     }
 };

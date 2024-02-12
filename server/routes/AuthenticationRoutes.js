@@ -1,3 +1,4 @@
+import { requestToken } from "../controllers/ApplicationsController.js";
 import { login, authenticate, logout, isAuthenticated } from "../controllers/AuthenticationController.js";
 import { add } from "../controllers/UsersController.js";
 import { Router } from "express";
@@ -19,6 +20,9 @@ router.get("/logout", isAuthenticated, logout);
 
 // Route to display the user registration page
 router.get("/register", add);
+
+// Route for application api authentication
+router.post("/request-token", requestToken);
 
 // Export the router for use in other parts of the application
 export default router;

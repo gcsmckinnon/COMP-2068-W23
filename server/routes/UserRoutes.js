@@ -8,7 +8,7 @@ import { isAuthenticated, isRole } from "../controllers/AuthenticationController
 const router = Router();
 
 // Configure Multer for file uploads
-const tempStorageLocation = "temp";
+const tempStorageLocation = process.env.TEMP_FILE_STORAGE || "temp";
 
 // Create a storage engine for Multer that defines how and where files should be stored
 const storage = multer.diskStorage({
@@ -28,18 +28,7 @@ const storage = multer.diskStorage({
 });
 
 // Create a Multer instance with the defined storage engine
-const upload = multer({ storage });
-
-// Middleware to handle HTTP method issues
-const requestCheck = (req, _, next) => {
-    if (req.method === "post") {
-        if (req.body._method && req.body._method === "put") {
-            // Correct the HTTP method for PUT requests, as they may come as POST with a "_method" field
-            req.method === "put";
-        }
-    }
-    next();
-};
+export const upload = multer({ storage });
 
 // Define routes and associate them with controller actions
 // These routes are used for user management and access control
@@ -57,7 +46,9 @@ router.get("/:id", isAuthenticated, show);
 router.get("/:id/edit", isAuthenticated, edit);
 
 // Route to create a new user
-router.post("/", isAuthenticated, upload.single("avatar"), create);
+router.post("/", (req, _, next) => {
+    next();
+}, upload.single("avatar"), create);
 
 // Handle issue with multipart forms not having detectable fields unless they've gone through multer
 router.post("/:id", (req, res, next) => {
