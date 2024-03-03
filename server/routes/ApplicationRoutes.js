@@ -7,13 +7,11 @@ import {
     create,
     update,
     remove
-} from "../controllers/ApplicationsController.js";
+} from "../controllers/ApplicationController.js";
 import { isRole } from "../controllers/AuthenticationController.js";
 
-// Creates a router
 const router = Router();
 
-// Defines routes and associates them with controller actions
 router.use(isRole("ADMIN"));
 router.get("/", index);
 router.get("/new", add);

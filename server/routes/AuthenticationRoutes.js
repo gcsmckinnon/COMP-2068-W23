@@ -1,4 +1,4 @@
-import { requestToken } from "../controllers/ApplicationsController.js";
+import { requestToken } from "../controllers/ApplicationController.js";
 import { login, authenticate, logout, isAuthenticated } from "../controllers/AuthenticationController.js";
 import { add } from "../controllers/UsersController.js";
 import { Router } from "express";
