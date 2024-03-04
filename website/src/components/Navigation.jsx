@@ -3,6 +3,12 @@ import { Link } from "react-router-dom";
 import styles from "./Navigation.module.css";
 
 const Navigation = () => {
+    const pageLinks = [
+        { label: "Home", link: "/" },
+        { label: "About", link: "/about" },
+        { label: "Contact", link: "/contact" },
+    ];
+
     return (
         <nav className={`navbar navbar-expand-lg ${styles.navbar}`}>
             <div className="container-fluid">
@@ -10,21 +16,13 @@ const Navigation = () => {
                     MyApp
                 </Link>
                 <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li className="nav-item">
-                        <Link className={`nav-link ${styles.navLink}`} to="/">
-                            Home
-                        </Link>
-                    </li>
-                    <li className="nav-item">
-                        <Link className={`nav-link ${styles.navLink}`} to="/about">
-                            About
-                        </Link>
-                    </li>
-                    <li className="nav-item">
-                        <Link className={`nav-link ${styles.navLink}`} to="/contact">
-                            Contact
-                        </Link>
-                    </li>
+                    { pageLinks.map(({ label, link }, index) => (
+                        <li className="nav-item" key={ index }>
+                            <Link className={`nav-link ${styles.navLink}`} to={ link }>
+                                { label }
+                            </Link>
+                        </li>
+                    ))}
                 </ul>
             </div>
         </nav>
