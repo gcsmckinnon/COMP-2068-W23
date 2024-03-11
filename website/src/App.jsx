@@ -6,6 +6,8 @@ import Navigation from "./components/Navigation";
 import HomePage from "./pages/Home";
 const AboutPage = lazy(() => import("./pages/About"));
 const ContactPage = lazy(() => import("./pages/Contact"));
+const CardsPage = lazy(() => import("./pages/Cards/Index"));
+const CardPage = lazy(() => import("./pages/Cards/Show"));
 
 const App = () => {
     return (
@@ -17,6 +19,8 @@ const App = () => {
                     <Route path="/" element={<HomePage />} />
                     <Route path="/about" element={<AboutPage  />} />
                     <Route path="/contact" element={<ContactPage  />} />
+                    <Route path="/cards" element={<CardsPage  />} />
+                    <Route path="/cards/:id" element={<CardPage  />} />
                 </Routes>
             </Suspense>
         </Router>
