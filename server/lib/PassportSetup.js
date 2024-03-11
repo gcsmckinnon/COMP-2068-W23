@@ -23,8 +23,6 @@ export default (app) => {
     passport.use(new JwtStrategy(options, async (jwtPayload, done) => {
         const app = await Application.findById(jwtPayload.id);
         
-        console.log("AUTHENTICATING", jwtPayload);
-
         if (!app) return done(null, false);
 
         return done(null, true);
