@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { index as cardIndex, show as cardShow } from "./facade/controllers/CardsController.js";
+import * as Card from "./facade/controllers/CardsController.js";
 
 const router = Router();
 
-router.get("/cards", cardIndex);
-router.get("/cards/:id", cardShow);
+router.get("/cards", Card.index);
+router.get("/cards/:id", Card.show);
 
 export default router;
