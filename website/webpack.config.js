@@ -22,6 +22,7 @@ const config = {
     output: {
         path: path.resolve(__dirname, "build"),
         filename: "bundle.js",
+        publicPath: "/",
     },
     // Specify the file extensions that can be imported without specifying the extension
     resolve: {
