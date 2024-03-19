@@ -3,4 +3,6 @@ node_modules
 *.docx
 *.pdf
 avatars/*
+!avatars/.gitkeep
 temp/*
+!temp/.gitkeep

@@ -11,7 +11,13 @@ dotenv.config();
 
 // This creates our application
 const app = express();
-// app.use(cors());
+
+// This sets up CORS
+const corsOptions = {
+    origin: process.env.CORS_ORIGIN,
+    credentials: true
+};
+app.use(cors(corsOptions));
 
 // Setup sessions
 app.use(session({

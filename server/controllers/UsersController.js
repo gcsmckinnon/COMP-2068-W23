@@ -27,9 +27,19 @@ export const show = async (req, res, next) => {
         const user = await findAndVerifyUser(req);
 
         // Render the user's profile page with the retrieved user data
-        res.render("cards/show", {
-            user,
-            title: "User View",
+        res.format({
+            "text/html": () => {
+                res.render("users/show", {
+                    user,
+                    title: "User View",
+                });
+            },
+            "application/json": () => {
+                res.status(200).json({ status: 200, message: "SUCCESS", user });
+            },
+            default: () => {
+                res.status(406).send("NOT ACCEPTABLE");
+            }
         });
     } catch (error) {
         next(error);
