@@ -6,6 +6,8 @@ import { Link } from "react-router-dom";
 import Card from "./Card";
 
 const Cards = () => {
+    axios.defaults.withCredentials = true;
+    
     const [cards, setCards] = useState([]);
 
     useEffect(() => {
@@ -27,7 +29,7 @@ const Cards = () => {
             <div className="d-flex flex-wrap justify-content-center">
                 {cards.length > 0 &&
                     cards.map((card) => (
-                        <Card card={card}>
+                        <Card key={card._id} card={card}>
                             <div className={styles.cardFooter}>
                                 <Link to={`/cards/${card._id}`} className={`btn btn-primary ${styles.viewButton}`}>
                                     View

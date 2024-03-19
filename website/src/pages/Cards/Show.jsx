@@ -5,6 +5,8 @@ import axios from "axios";
 import styles from "./Cards.module.css";
 
 const Show = () => {
+    axios.defaults.withCredentials = true;
+    
     const { id } = useParams();
     const [card, setCard] = React.useState({});
 

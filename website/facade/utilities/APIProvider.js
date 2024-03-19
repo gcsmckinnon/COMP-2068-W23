@@ -2,6 +2,8 @@ import axios from 'axios';
 import dotenv from "dotenv";
 
 dotenv.config();
+axios.defaults.withCredentials = true;
+
 
 let token = null; // This is like our "secret key" holder. Initially, it's empty because we haven't asked for it yet.
 
@@ -53,8 +55,6 @@ async function APIProvider() {
     instance.interceptors.response.use(response => {
         return response; // If everything is fine, just continue with the call.
     }, async error => {
-        console.log(error.response);
-
         const originalRequest = error.config; // This is like remembering the number we were dialing.
 
         // If the reason our call didn't go through was specifically because our pass was no good...
@@ -67,7 +67,9 @@ async function APIProvider() {
             
             return instance(originalRequest); // And then we redial the number we were trying to call initially.
         }
-        return Promise.reject(error); // If the call didn't go through for any other reason, we just accept the call failed.
+
+        console.log(error.response?.data);
+        return Promise.reject(error.response?.data || error); // If the call didn't go through for any other reason, we just accept the call failed.
     });
 
     return instance; // Here's our special phone, ready to use.

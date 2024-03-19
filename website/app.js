@@ -9,6 +9,8 @@ const __dirname = path.dirname(__filename);
 
 const app = express(); // Creating an Express application
 
+app.use(express.json()); // Middleware for parsing JSON
+
 // Serving static files from the React app build directory
 app.use(express.static(path.join(__dirname, 'build')));
 
