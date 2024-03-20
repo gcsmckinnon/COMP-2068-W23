@@ -51,3 +51,17 @@ export const authenticate = async (req, res, _) => {
         res.status(404).json({ error });
     }
 }
+
+export const logout = async (req, res, _) => {
+    try {
+        const userService = await UserService;
+        await userService.logout(req.headers.cookie);
+
+        res.clearCookie("connect.sid", { path: "/" });
+        res.clearCookie("user", { path: "/" });
+
+        res.status(200).json({});
+    } catch (error) {
+        res.status(404).json({ error });
+    }
+};

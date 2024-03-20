@@ -27,7 +27,7 @@ router.get("/users/:id", applicationAuthenticate, isAuthenticated, userShow);
 router.post("/users", applicationAuthenticate, upload.single("avatar"), userCreate);
 router.put("/users/:id", applicationAuthenticate, upload.single("avatar"), userUpdate);
 router.post("/users/authenticate", applicationAuthenticate, userAuthenticate);
-router.post("/users/logout", applicationAuthenticate, userLogout);
+router.post("/users/logout", applicationAuthenticate, isAuthenticated, userLogout);
 
 
 export default router;

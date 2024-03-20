@@ -1,16 +1,17 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import PageTitle from "../../components/PageTitle";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../App";
+import Cookies from "js-cookie";
 
 const Login = () => {
     axios.defaults.withCredentials = true;
     
-    const [user, setUser] = useState({});
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const [user, setUser] = useState({});
+    const { setUser: login } = useAuth();
 
     const submitForm = async (event) => {
         event.preventDefault();
@@ -19,9 +20,10 @@ const Login = () => {
             const resp = await axios.post("/api/users/authenticate", user);
 
             login(resp.data);
+            Cookies.set("user", JSON.stringify(resp.data));
 
             toast("User logged in successfully");
-            navigate(`/users/${resp.data.id}`);
+            navigate(`/profile`);
         } catch (error) {
             toast.error(error?.response?.data?.error?.message || "An error occurred");
         }

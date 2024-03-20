@@ -47,26 +47,44 @@ export const authenticate = async (req, res, next) => {
 export const logout = (req, res, next) => {
     // Logout the user by removing user information from the session
     req.logout((error) => {
-        if (error) return next(error);
+        if (error) {
+            console.error(error);
+            return next(error);
+        }
 
         // Destroy the user's session, removing session data from the server
         req.session.destroy((error) => {
-            if (error) return next(error);
+            if (error) {
+                console.error(error);
+                return next(error);
+            }
 
             // Clear the "connect.sid" cookie used for tracking the session
-            res.clearCookie("connect.sid");
+            res.clearCookie("connect.sid", { path: "/" });
 
             // Redirect the user to the login page after successful logout
-            res.redirect("/login");
+            res.format({
+                "text/html": () => res.redirect("/login"),
+                "application/json": () => res.status(200).json({ status: 200, message: "SUCCESS" }),
+                default: () => res.status(406).send("NOT ACCEPTABLE"),
+            });
         });
     });
 };
 
 // Check if the user is authenticated, and redirect to login if not
 export const isAuthenticated = (req, res, next) => {
-    if (req.isAuthenticated()) return next(); // Proceed if authenticated
+    if (req.isAuthenticated()) {
+        return next(); // Proceed if authenticated
+    }
+    
+    res.clearCookie("connect.sid", { path: "/" });
 
-    res.redirect("/login"); // Redirect to login page if not authenticated
+    res.format({
+        "text/html": () => res.redirect("/login"),
+        "application/json": () => res.status(401).json({ status: 401, message: "NOT AUTHORIZED" }),
+        default: () => res.status(406).send("NOT ACCEPTABLE"),
+    });
 };
 
 // Check if the user has a specific role

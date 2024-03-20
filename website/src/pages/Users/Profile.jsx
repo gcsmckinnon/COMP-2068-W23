@@ -1,28 +1,29 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import React from "react";
 import PageTitle from "../../components/PageTitle";
 import { useAuth } from "../../App";
+import { useNavigate } from "react-router-dom";
+import Form from "./Form";
+import { toast } from "react-toastify";
 import axios from "axios";
 
 const Profile = () => {
-    axios.defaults.withCredentials = true;
+    const navigate = useNavigate();
+    const { user, setUser } = useAuth();
 
-    const { id } = useParams();
-    const { user: contextUser } = useAuth();
-    const [user, setUser] = useState({});
+    if (!user) {
+        return navigate("/login");
+    }
 
-    useEffect(() => {
-        const fetchData = async () => {
-            const userResp = await axios.get(`/api/users/${id}`);
-            setUser(userResp.data);
-        };
+    const submitForm = async (event) => {
+        event.preventDefault();
 
-        if (contextUser && contextUser.id === id) {
-            setUser(contextUser);
-        } else {
-            fetchData();
+        try {
+            await axios.put(`/api/users/${user._id || user.id}`, user);
+            toast("User updated successfully");
+        } catch (error) {
+            toast.error(error?.response?.data?.error?.message || "An error occurred");
         }
-    }, [id]);
+    };
 
     return (
         <div className="container">
@@ -31,6 +32,8 @@ const Profile = () => {
             {user.firstName ? <h2>{`Hello, ${user.firstName} ${user.lastName}!`}</h2> : null}
 
             <hr className="my-3" />
+
+            <Form user={user} setUser={setUser} submitForm={submitForm} submitLabel="Update" />
         </div>
     );
 };

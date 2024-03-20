@@ -63,6 +63,18 @@ const UserService = (async () => {
                 throw error;
             }
         },
+
+        logout: async (cookies) => {
+            try {
+                await apiProvider.post("/users/logout", {}, {
+                    headers: {
+                        Cookie: cookies
+                    }
+                });
+            } catch (error) {
+                throw error;
+            }
+        }
     };
 })();
 

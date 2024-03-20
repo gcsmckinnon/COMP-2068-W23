@@ -13,10 +13,13 @@ const Navigation = () => {
         { label: "Cards", link: "/cards" },
         // Conditionally render these based on user's login status
         ...(user
-            ? [{ label: "Profile", link: `/users/${user.id}` }]
+            ? [
+                  { label: "Profile", link: `/profile` },
+                  { label: "Logout", link: "/logout" },
+              ]
             : [
-                  { label: "Register", link: "/users/register" },
-                  { label: "Login", link: "/users/login" },
+                  { label: "Register", link: "/register" },
+                  { label: "Login", link: "/login" },
               ]),
     ];
 
