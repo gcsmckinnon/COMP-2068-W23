@@ -16,6 +16,7 @@ const Navigation = () => {
             ? [
                   { label: "Profile", link: `/profile` },
                   { label: "Logout", link: "/logout" },
+                  { label: "Join/Host Game", link: "/games" },
               ]
             : [
                   { label: "Register", link: "/register" },
