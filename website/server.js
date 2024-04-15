@@ -1,7 +1,10 @@
 import app from "./app.js";
 import { Server } from "socket.io";
 import { createServer } from "http";
-import socket from "./gameServer.js";
+import socket from "./GameServer.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const httpServer = createServer(app);
 const io = new Server(httpServer);
@@ -11,5 +14,5 @@ socket(io);
 const port = process.env.PORT || 3000;
 
 httpServer.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+    console.log(`Server running on http://localhost:${port}`);
 });

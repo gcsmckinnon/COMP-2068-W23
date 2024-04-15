@@ -1,105 +1,116 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, createContext, useContext } from "react";
 import io from "socket.io-client";
 import { useAuth } from "../../App";
-import Cookies from "js-cookie";
+import { toast } from "react-toastify";
 
+import GameSetup from "./GameSetup";
+import GamePlay from "./GamePlay";
+import GameEnd from "./GameEnd";
+
+const GameContext = createContext(null);
+export const useGame = () => useContext(GameContext);
 const socket = io("http://localhost:3000");
 
 const Index = () => {
     const { user } = useAuth();
-    const [game, setGame] = useState({});
-    const [showButtons, setShowButtons] = useState(true);
-    const [joinGameCode, setJoinGameCode] = useState("");
-    const [host, setHost] = useState(false);
+    const [gameState, setGameState] = useState({});
+    const [socketReady, setSocketReady] = useState(false);
 
-    useEffect(() => {
-        const gameCheckResp = localStorage.getItem("game");
+    const gameReady = (game, playerType) => {
+        setGameState((prevState) => ({ ...prevState, game, playerType, status: "ready" }));
 
-        if (gameCheckResp) {
-            const gameCheck = JSON.parse(gameCheckResp);
-            if (gameCheck.game) {
-                setGame(gameCheck.game);
-                setShowButtons(false);
-            }
+        localStorage.setItem("gameId", game.gameId);
 
-            if (gameCheck.playerType === "host") {
-                setHost(true);
-            }
+        toast.success("Game is ready to play!");
+    };
+
+    const gameUpdated = (game) => {
+        console.log("Game updated", game, user);
+
+        if (game.players.length > 0 && game.host && user && game.host._id !== user._id) {
+            const player = game.players.find((player) => player.user._id === user._id);
+
+            console.log(game.players, user);
+
+            if (!player) throw new Error("Player not found in game");
+
+            game.player = player;
         }
 
-        socket.on("connection", () => {
-            console.log("Connected to WebSocket server");
-        });
+        setGameState((prevState) => ({ ...prevState, status: "ready", game }));
+    };
 
-        socket.on("hostGame", (game) => {
-            console.log("Game hosted with ID", game.gameId);
+    const gameExited = () => {
+        console.log("Client exited game");
+        localStorage.removeItem("gameId");
 
-            setGame(game);
-            setHost(true);
-            
-            localStorage.setItem("game", JSON.stringify({ playerType: "host", game }));
+        // Temporarily set a state to indicate processing of exit
+        setGameState((prevState) => ({ ...prevState, exitingGame: true }));
 
-            setShowButtons(false);
-        });
+        // Then after a delay or in a callback, set the state that might unmount the component
+        setTimeout(() => {
+            setGameState((prevState) => ({ ...prevState, status: "waiting", game: null, exitingGame: false }));
+        }, 1000); // Delaying to ensure the socket event can be processed
+    };
 
-        socket.on("joinGame", (game) => {
-            console.log("Game joined with ID", game.gameId);
+    const errorHandler = (error) => {
+        toast.error(error);
+    };
 
-            setGame(game);
+    const messageHandler = (message) => toast.info(message);
 
-            localStorage.setItem("game", JSON.stringify({ playerType: "player", game }));
+    useEffect(() => {
+        if (!user) {
+            toast.error("You must be logged in to play a game");
+            return;
+        };
 
+        const connected = () => {
+            console.log("CONNECTED", user);
 
-            setShowButtons(false);
-        });
+            setGameState((prevState) => ({
+                ...prevState,
+                user,
+                selectedQuestion: null,
+                selectedAnswers: [],
+                socket,
+                game: null,
+                status: "waiting",
+                socket,
+            }));
+
+            setSocketReady(true);
+        };
+
+        socket.on("connect", connected);
+        socket.on("gameStarted", gameReady);
+        socket.on("gameUpdated", gameUpdated);
+        socket.on("gameExited", gameExited);
+        socket.on("error", errorHandler);
+        socket.on("message", messageHandler);
 
         return () => {
-            socket.off("connection");
-            socket.off("hostGame");
-            socket.off("joinGame");
+            socket.off("connect", connected);
+            socket.off("gameStarted", gameReady);
+            socket.off("gameExited", gameExited);
+            socket.off("gameUpdated", gameUpdated);
+            socket.off("error", errorHandler);
+            socket.off("message", messageHandler);
         };
     }, []);
 
-    const hostGame = () => {
-        socket.emit("hostGame", user);
-    };
-
-    const joinGame = () => {
-        socket.emit("joinGame", user, joinGameCode);
-    };
-
     return (
-        <div className="d-flex flex-column justify-content-center align-items-center" style={{ height: "100vh" }}>
-            {showButtons ? (
-                <>
-                    <div className="mb-3">
-                        <button className="btn btn-lg btn-primary me-2" onClick={() => hostGame()}>
-                            Host Game
-                        </button>
-                    </div>
+        socketReady && (
+            <GameContext.Provider value={{ gameState, setGameState }}>
+                <div className="container d-flex flex-xl-column justify-content-center align-items-center" style={{ height: "100vh" }}>
+                    {gameState.status === "waiting" && <GameSetup />}
 
-                    <div className="input-group mb-3">
-                        <input type="text" className="form-control" placeholder="Enter Game Code" onChange={(e) => setJoinGameCode(e.target.value)} />
+                    {gameState.status === "ready" && <GamePlay />}
 
-                        <button className="btn btn-outline-secondary" type="button" onClick={() => joinGame()}>
-                            Join
-                        </button>
-                    </div>
-                </>
-            ) : game ? (
-                <>
-                    <div className="text-center mt-4">
-                        <h3>
-                            Game Code: <span className="text-primary">{game.gameId || joinGameCode}</span>
-                        </h3>
-                    </div>
-                    <div className="mt-4">
-                        {host ? <span>You are the host!</span> : <span>You are a player!</span>}
-                        <p>Gameboard will appear here...</p>
-                    </div>
-                </>
-            ) : null}
-        </div>
+                    {gameState.status === "closed" && <GameEnd />}
+                </div>
+            </GameContext.Provider>
+        )
     );
 };
 

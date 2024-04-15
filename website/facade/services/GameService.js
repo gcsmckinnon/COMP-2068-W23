@@ -1,132 +1,156 @@
 import Redis from "ioredis";
 import CardService from "./CardService.js";
+import crypto from "crypto";
 
 const GameService = (async () => {
     const redis = new Redis();
+    const cardService = await CardService;
+
+    const hostGame = async (user) => {
+        const gameId = generateGameId();
+        const deck = await cardService.index();
+        const questions = deck.filter((card) => card.type === "QUESTION");
+        const answers = deck.filter((card) => card.type === "ANSWER");
+
+        const game = {
+            gameId,
+            host: user,
+            players: [],
+            status: "waiting",
+            deck: { questions: shuffle(questions), answers: shuffle(answers) },
+            answerDiscard: [],
+            questionDiscard: [],
+        };
+
+        const key = `game:${gameId}`;
+        await redis.set(key, JSON.stringify(game), "EX", 3600);
+
+        return gameId;
+    };
+
+    const joinGame = async (user, gameId) => {
+        const key = `game:${gameId}`;
+        const gameData = await redis.get(key);
+
+        if (!gameData) {
+            throw new Error("Game not found");
+        }
+
+        const game = JSON.parse(gameData);
+
+        if (game.deck.answers.length < 5) {
+            const answers = shuffle(game.answerDiscard);
+            game.deck.answers.push(...answers);
+        }
+
+        game.players.push({ user, answers: game.deck.answers.splice(0, 5), score: 0 });
+
+        await redis.set(key, JSON.stringify(game), "EX", 3600);
+
+        return gameId;
+    }
+
+    const getGame = async (gameId) => {
+        const key = `game:${gameId}`;
+        const gameData = await redis.get(key);
+
+        if (!gameData) {
+            throw new Error("Game not found");
+        }
+
+        return JSON.parse(gameData);
+    };
+
+    const exitGame = async (user, gameId) => {
+        const key = `game:${gameId}`;
+        const gameData = await redis.get(key);
+
+        if (!gameData) {
+            throw new Error("Game not found");
+        }
+
+        const game = JSON.parse(gameData);
+
+        game.players = game.players.filter((player) => player.user.id !== user.id);
+
+        await redis.set(key, JSON.stringify(game), "EX", 3600);
+
+        return gameId;
+    };
+
+    const endGame = async (user, gameId) => {
+        const key = `game:${gameId}`;
+        const gameData = await redis.get(key);
+
+        if (!gameData) {
+            throw new Error("Game not found");
+        }
+
+        const game = JSON.parse(gameData);
+
+        if (game.host._id !== user.id) {
+            await redis.del(key);
+        } else throw new Error("Only the host can end the game");
+
+        return gameId;
+    };
+
+    const startRound = async (user, gameId) => {
+        const key = `game:${gameId}`;
+        const gameData = await redis.get(key);
+
+        if (!gameData) {
+            throw new Error("Game not found");
+        }
+
+        const game = JSON.parse(gameData);
+
+        if (game.host._id !== user._id) {
+            throw new Error("Only the host can start a round");
+        }
+
+        game.status = "playing";
+
+        game.players.forEach((player) => {
+            // Check if player has less than 5 answers and if they do, refill their hand
+            if (player.answers.length < 5) {
+                if (game.deck.answers.length < 5) {
+                    const answers = shuffle(game.answerDiscard);
+                    game.deck.answers.push(...answers);
+                }
+
+                player.answers.push(...answers.splice(0, 5 - player.answers.length));
+            }
+        });
+
+        game.currentQuestion = game.deck.questions.pop();
+
+        await redis.set(key, JSON.stringify(game), "EX", 3600);
+
+        return gameId;
+    };
 
     return {
-        create: async (user) => {
-            try {
-                // generates a random 6 digit hexadecimal number
-                const gameId = Math.floor(Math.random() * 1000000).toString(16);
-
-                const cardService = await CardService;
-                const deck = await cardService.index();
-                const questions = deck.filter(card => card.type === "QUESTION");
-                const answers = deck.filter(card => card.type === "ANSWER");
-
-                const key = `game:${gameId}`;
-                const packet = {
-                    gameId,
-                    host: user,
-                    players: [],
-                    status: "waiting",
-                    deck: { questions, answers },
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
-                };
-
-                await redis.set(key, JSON.stringify(packet));
-
-                return gameId;
-            } catch (error) {
-                console.error(error);
-                throw error;
-            }
-        },
-        join: async (user, gameId) => {
-            try {
-                const gameData = await redis.get(`game:${gameId}`);
-
-                if (!gameData) {
-                    throw new Error("Game not found");
-                }
-
-                const game = JSON.parse(gameData);
-
-                if (game.status === "started") {
-                    throw new Error("Game already started");
-                }
-
-                // pop off 5 answers from the answer deck and add to the user
-                const answers = game.deck.answers.splice(0, 5);
-                game.players.push({ user, answers, score: 0 });
-
-                return gameId;
-            } catch (error) {
-                console.error(error);
-                throw error;
-            }
-        },
-        get: async (gameId) => {
-            try {
-                const gameData = await redis.get(`game:${gameId}`);
-
-                if (!gameData) {
-                    throw new Error("Game not found");
-                }
-
-                return JSON.parse(gameData);
-            } catch (error) {
-                console.error(error);
-                throw error;
-            }
-        },
-        start: async (gameId) => {
-            try {
-                const gameData = await redis.get(`game:${gameId}`);
-
-                if (!gameData) {
-                    throw new Error("Game not found");
-                }
-
-                const game = JSON.parse(gameData);
-
-                if (game.status === "started") {
-                    throw new Error("Game already started");
-                }
-
-                game.status = "started";
-                game.updatedAt = new Date();
-
-                await redis.set(`game:${gameId}`, JSON.stringify(game));
-            } catch (error) {
-                console.error(error);
-                throw error;
-            }
-        },
-        end: async (gameId) => {
-            try {
-                const gameData = await redis.get(`game:${gameId}`);
-
-                if (!gameData) {
-                    throw new Error("Game not found");
-                }
-
-                const game = JSON.parse(gameData);
-
-                if (game.status === "ended") {
-                    throw new Error("Game already ended");
-                }
-
-                game.status = "ended";
-                game.updatedAt = new Date();
-
-                await redis.set(`game:${gameId}`, JSON.stringify(game));
-            } catch (error) {
-                console.error(error);
-                throw error;
-            }
-        },
-        delete: async (gameId) => {
-            try {
-                await redis.del(`game:${gameId}`);
-            } catch (error) {
-                console.error(error);
-                throw error;
-            }
-        }
+        hostGame,
+        joinGame,
+        getGame,
+        exitGame,
+        endGame,
+        startRound,
     };
 })();
 
 export default GameService;
+
+function generateGameId () {
+    return crypto.randomBytes(3).toString('hex');
+};
+
+function shuffle (array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+
+    return array;
+};

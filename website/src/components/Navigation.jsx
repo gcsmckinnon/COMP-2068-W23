@@ -10,7 +10,6 @@ const Navigation = () => {
         { label: "Home", link: "/" },
         { label: "About", link: "/about" },
         { label: "Contact", link: "/contact" },
-        { label: "Cards", link: "/cards" },
         // Conditionally render these based on user's login status
         ...(user
             ? [
